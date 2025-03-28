@@ -1,0 +1,58 @@
+name: 'Example GitHub Action'
+description: 'An example GitHub Action for testing the parser'
+author: 'GitHub Action Parser'
+
+branding:
+  icon: 'code'
+  color: 'blue'
+
+inputs:
+  file-path:
+    description: 'Path to the file to process'
+    required: true
+  output-format:
+    description: 'Format of the output (json, yaml, or text)'
+    required: false
+    default: 'json'
+  verbose:
+    description: 'Enable verbose output'
+    required: false
+    default: 'false'
+
+outputs:
+  result:
+    description: 'The result of the action'
+    value: ${{ steps.main.outputs.result }}
+  status:
+    description: 'The status of the operation'
+    value: ${{ steps.main.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup environment
+      shell: bash
+      run: |
+        echo "Setting up environment"
+        mkdir -p ./output
+
+    - name: Run main process
+      id: main
+      shell: bash
+      run: |
+        echo "Processing input file: ${{ inputs.file-path }}"
+        echo "Using output format: ${{ inputs.output-format }}"
+        
+        if [[ "${{ inputs.verbose }}" == "true" ]]; then
+          echo "Verbose output enabled"
+        fi
+        
+        # Simulate processing
+        echo "::set-output name=result::success"
+        echo "::set-output name=status::completed"
+
+    - name: Cleanup
+      shell: bash
+      run: |
+        echo "Cleaning up temporary files"
+        rm -rf ./output 

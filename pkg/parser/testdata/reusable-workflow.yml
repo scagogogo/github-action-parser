@@ -1,0 +1,81 @@
+name: Reusable Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        default: '16'
+        type: string
+      build-command:
+        description: 'Build command to run'
+        required: false
+        default: 'npm run build'
+        type: string
+      artifact-name:
+        description: 'Name of the artifact to create'
+        required: true
+        type: string
+      artifact-path:
+        description: 'Path to the artifact files'
+        required: false
+        default: 'dist'
+        type: string
+    
+    secrets:
+      npm-token:
+        description: 'NPM token for private packages'
+        required: false
+    
+    outputs:
+      build-result:
+        description: 'Result of the build process'
+        value: ${{ jobs.build.outputs.result }}
+      build-time:
+        description: 'Time taken to build the project'
+        value: ${{ jobs.build.outputs.build-time }}
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.build-step.outputs.result }}
+      build-time: ${{ steps.build-step.outputs.time }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      
+      - name: Configure NPM token
+        if: ${{ secrets.npm-token != '' }}
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.npm-token }}" > .npmrc
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        id: build-step
+        run: |
+          START_TIME=$(date +%s)
+          ${{ inputs.build-command }}
+          END_TIME=$(date +%s)
+          BUILD_TIME=$((END_TIME - START_TIME))
+          
+          echo "::set-output name=result::success"
+          echo "::set-output name=time::$BUILD_TIME"
+      
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.artifact-path }}
+          retention-days: 1 
