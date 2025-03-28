@@ -29,27 +29,27 @@ jobs:
       
     - name: 验证基本解析示例
       run: |
-        go build -o parse-action ./example/01_basic_parsing/parse_action.go
+        go build -o parse-action ./examples/01_basic_parsing/parse_action.go
         ./parse-action pkg/parser/testdata/action.yml
         
     - name: 验证工作流解析示例
       run: |
-        go build -o parse-workflow ./example/02_workflow_parsing/parse_workflow.go
+        go build -o parse-workflow ./examples/02_workflow_parsing/parse_workflow.go
         ./parse-workflow pkg/parser/testdata/workflow.yml
         
     - name: 验证验证工具示例
       run: |
-        go build -o validate-action ./example/03_validation/validate_action.go
+        go build -o validate-action ./examples/03_validation/validate_action.go
         ./validate-action pkg/parser/testdata/action.yml
         
     - name: 验证可重用工作流分析示例
       run: |
-        go build -o analyze-reusable ./example/04_reusable_workflow/analyze_reusable_workflow.go
+        go build -o analyze-reusable ./examples/04_reusable_workflow/analyze_reusable_workflow.go
         ./analyze-reusable pkg/parser/testdata/reusable-workflow.yml
         
     - name: 验证实用工具函数示例
       run: |
-        go build -o utils-example ./example/05_utility_functions/utils_example.go
+        go build -o utils-example ./examples/05_utility_functions/utils_example.go
         ./utils-example parse_dir pkg/parser/testdata/
         ./utils-example check_reusable pkg/parser/testdata/reusable-workflow.yml
         ./utils-example extract_inputs pkg/parser/testdata/reusable-workflow.yml

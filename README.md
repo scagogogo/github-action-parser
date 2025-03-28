@@ -31,19 +31,19 @@ import "github.com/scagogogo/github-action-parser/pkg/parser"
 
 ### 示例程序
 
-查看[示例目录](./example)获取完整的示例应用程序：
+查看[示例目录](./examples)获取完整的示例应用程序：
 
-1. [基本解析](./example/01_basic_parsing/parse_action.go) - 解析Action文件并显示其结构
-2. [工作流解析](./example/02_workflow_parsing/parse_workflow.go) - 解析Workflow文件并分析其组成部分
-3. [验证工具](./example/03_validation/validate_action.go) - 验证Action/Workflow文件并提供修复建议
-4. [可重用工作流分析](./example/04_reusable_workflow/analyze_reusable_workflow.go) - 分析可重用工作流的结构和参数
-5. [实用工具函数](./example/05_utility_functions/utils_example.go) - 展示各种实用工具函数的使用方法
+1. [基本解析](./examples/01_basic_parsing/parse_action.go) - 解析Action文件并显示其结构
+2. [工作流解析](./examples/02_workflow_parsing/parse_workflow.go) - 解析Workflow文件并分析其组成部分
+3. [验证工具](./examples/03_validation/validate_action.go) - 验证Action/Workflow文件并提供修复建议
+4. [可重用工作流分析](./examples/04_reusable_workflow/analyze_reusable_workflow.go) - 分析可重用工作流的结构和参数
+5. [实用工具函数](./examples/05_utility_functions/utils_example.go) - 展示各种实用工具函数的使用方法
 
 构建并运行示例：
 
 ```bash
 # 构建基本解析示例
-go build -o parse-action ./example/01_basic_parsing/parse_action.go
+go build -o parse-action ./examples/01_basic_parsing/parse_action.go
 
 # 使用测试文件运行
 ./parse-action pkg/parser/testdata/action.yml
