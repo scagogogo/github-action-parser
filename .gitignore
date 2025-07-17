@@ -44,4 +44,74 @@ dist/
 
 # Debug files
 debug
-__debug_bin 
+__debug_bin
+
+# Documentation build artifacts
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/node_modules/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.#*
+\#*#
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Archive files
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Profile files
+*.prof
+*.pprof
+cpu.prof
+mem.prof
+block.prof
+mutex.prof
+
+# Go module cache
+go.sum.backup
+
+# Test coverage reports
+coverage/
+*.cover
+*.coverprofile
+
+# Benchmark results
+*.bench
+
+# Air live reload
+.air.toml
+tmp/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# CI/CD artifacts
+.github/workflows/*.log
