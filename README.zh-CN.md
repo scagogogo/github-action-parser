@@ -1,13 +1,29 @@
 # GitHub Action Parser
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/scagogogo/github-action-parser.svg)](https://pkg.go.dev/github.com/scagogogo/github-action-parser) 
+[![Go Reference](https://pkg.go.dev/badge/github.com/scagogogo/github-action-parser.svg)](https://pkg.go.dev/github.com/scagogogo/github-action-parser)
 [![Go CI](https://github.com/scagogogo/github-action-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/scagogogo/github-action-parser/actions/workflows/ci.yml)
 [![Documentation](https://github.com/scagogogo/github-action-parser/actions/workflows/docs.yml/badge.svg)](https://scagogogo.github.io/github-action-parser/)
 [![Coverage](https://img.shields.io/badge/coverage-98.9%25-brightgreen)](https://github.com/scagogogo/github-action-parser)
 
 一个用于解析、验证和处理 GitHub Action YAML 文件的 Go 库。
 
-**📖 [文档](https://scagogogo.github.io/github-action-parser/zh/) | [English Documentation](https://scagogogo.github.io/github-action-parser/)**
+---
+
+## 📚 文档
+
+**🌐 [完整文档网站](https://scagogogo.github.io/github-action-parser/)**
+
+- 🇨🇳 [中文文档](https://scagogogo.github.io/github-action-parser/zh/)
+- 📖 [English Documentation](https://scagogogo.github.io/github-action-parser/)
+
+文档包含：
+- 🚀 **快速开始指南** - 快速设置和基本用法
+- 📋 **API 参考** - 完整的 API 文档和示例
+- 💡 **示例代码** - 实用的代码示例和用例
+- ✅ **验证指南** - 如何验证 actions 和 workflows
+- 🔄 **可重用工作流** - 处理可重用工作流
+
+---
 
 ## 功能特点
 

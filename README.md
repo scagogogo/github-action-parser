@@ -1,13 +1,29 @@
 # GitHub Action Parser
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/scagogogo/github-action-parser.svg)](https://pkg.go.dev/github.com/scagogogo/github-action-parser) 
+[![Go Reference](https://pkg.go.dev/badge/github.com/scagogogo/github-action-parser.svg)](https://pkg.go.dev/github.com/scagogogo/github-action-parser)
 [![Go CI](https://github.com/scagogogo/github-action-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/scagogogo/github-action-parser/actions/workflows/ci.yml)
 [![Documentation](https://github.com/scagogogo/github-action-parser/actions/workflows/docs.yml/badge.svg)](https://scagogogo.github.io/github-action-parser/)
 [![Coverage](https://img.shields.io/badge/coverage-98.9%25-brightgreen)](https://github.com/scagogogo/github-action-parser)
 
 A Go library for parsing, validating and processing GitHub Action YAML files.
 
-**📖 [Documentation](https://scagogogo.github.io/github-action-parser/) | [中文文档](https://scagogogo.github.io/github-action-parser/zh/)**
+---
+
+## 📚 Documentation
+
+**🌐 [Complete Documentation Website](https://scagogogo.github.io/github-action-parser/)**
+
+- 📖 [English Documentation](https://scagogogo.github.io/github-action-parser/)
+- 🇨🇳 [中文文档](https://scagogogo.github.io/github-action-parser/zh/)
+
+The documentation includes:
+- 🚀 **Getting Started Guide** - Quick setup and basic usage
+- 📋 **API Reference** - Complete API documentation with examples
+- 💡 **Examples** - Practical code examples and use cases
+- ✅ **Validation Guide** - How to validate actions and workflows
+- 🔄 **Reusable Workflows** - Working with reusable workflows
+
+---
 
 ## Features
 
