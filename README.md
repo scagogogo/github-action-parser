@@ -14,7 +14,7 @@ A Go library for parsing, validating and processing GitHub Action YAML files.
 **🌐 [Complete Documentation Website](https://scagogogo.github.io/github-action-parser/)**
 
 - 📖 [English Documentation](https://scagogogo.github.io/github-action-parser/)
-- 🇨🇳 [中文文档](https://scagogogo.github.io/github-action-parser/zh/)
+- 🇨🇳 [Chinese Documentation](https://scagogogo.github.io/github-action-parser/zh/)
 
 The documentation includes:
 - 🚀 **Getting Started Guide** - Quick setup and basic usage
@@ -79,12 +79,12 @@ func main() {
 - **📚 [API Reference](https://scagogogo.github.io/github-action-parser/api/)** - Detailed API documentation
 - **💡 [Examples](https://scagogogo.github.io/github-action-parser/examples/)** - Code examples and use cases
 
-### 中文文档
+### Chinese Documentation
 
-- **📖 [完整文档](https://scagogogo.github.io/github-action-parser/zh/)** - 完整的 API 参考和指南
-- **🚀 [快速开始](https://scagogogo.github.io/github-action-parser/zh/getting-started)** - 快速入门指南
-- **📚 [API 参考](https://scagogogo.github.io/github-action-parser/zh/api/)** - 详细的 API 文档
-- **💡 [示例](https://scagogogo.github.io/github-action-parser/zh/examples/)** - 代码示例和用例
+- **📖 [Complete Documentation](https://scagogogo.github.io/github-action-parser/zh/)** - Full API reference and guides
+- **🚀 [Getting Started](https://scagogogo.github.io/github-action-parser/zh/getting-started)** - Quick start guide
+- **📚 [API Reference](https://scagogogo.github.io/github-action-parser/zh/api/)** - Detailed API documentation
+- **💡 [Examples](https://scagogogo.github.io/github-action-parser/zh/examples/)** - Code examples and use cases
 
 ## Examples
 
