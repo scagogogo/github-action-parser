@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -602,6 +604,16 @@ func TestMapUtilities(t *testing.T) {
 		t.Errorf("Expected error for invalid input type")
 	}
 
+	// Test MapOfStringInterface with non-string key
+	input3 := map[interface{}]interface{}{
+		42:     "value1",
+		"key2": "value2",
+	}
+	_, err = MapOfStringInterface(input3)
+	if err == nil {
+		t.Errorf("Expected error for non-string key")
+	}
+
 	// Test MapOfStringString
 	stringMap := map[string]string{
 		"key1": "value1",
@@ -614,5 +626,715 @@ func TestMapUtilities(t *testing.T) {
 	}
 	if result4["key1"] != "value1" || result4["key2"] != "value2" {
 		t.Errorf("MapOfStringString did not preserve values")
+	}
+
+	// Test MapOfStringString with map[string]interface{} containing strings
+	interfaceMap := map[string]interface{}{
+		"key1": "value1",
+		"key2": "value2",
+	}
+	result5, err := MapOfStringString(interfaceMap)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if result5["key1"] != "value1" || result5["key2"] != "value2" {
+		t.Errorf("MapOfStringString did not convert interface map correctly")
+	}
+
+	// Test MapOfStringString with map[string]interface{} containing non-strings
+	interfaceMapWithNonString := map[string]interface{}{
+		"key1": "value1",
+		"key2": 42,
+	}
+	_, err = MapOfStringString(interfaceMapWithNonString)
+	if err == nil {
+		t.Errorf("Expected error for non-string value")
+	}
+
+	// Test MapOfStringString with map[interface{}]interface{}
+	interfaceKeyMap := map[interface{}]interface{}{
+		"key1": "value1",
+		"key2": "value2",
+	}
+	result6, err := MapOfStringString(interfaceKeyMap)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if result6["key1"] != "value1" || result6["key2"] != "value2" {
+		t.Errorf("MapOfStringString did not convert interface key map correctly")
+	}
+
+	// Test MapOfStringString with map[interface{}]interface{} containing non-string key
+	interfaceKeyMapWithNonStringKey := map[interface{}]interface{}{
+		42:     "value1",
+		"key2": "value2",
+	}
+	_, err = MapOfStringString(interfaceKeyMapWithNonStringKey)
+	if err == nil {
+		t.Errorf("Expected error for non-string key")
+	}
+
+	// Test MapOfStringString with map[interface{}]interface{} containing non-string value
+	interfaceKeyMapWithNonStringValue := map[interface{}]interface{}{
+		"key1": "value1",
+		"key2": 42,
+	}
+	_, err = MapOfStringString(interfaceKeyMapWithNonStringValue)
+	if err == nil {
+		t.Errorf("Expected error for non-string value")
+	}
+
+	// Test MapOfStringString with nil
+	result7, err := MapOfStringString(nil)
+	if err != nil {
+		t.Errorf("Unexpected error with nil input: %v", err)
+	}
+	if result7 != nil {
+		t.Errorf("Expected nil result for nil input")
+	}
+
+	// Test MapOfStringString with invalid type
+	_, err = MapOfStringString(42)
+	if err == nil {
+		t.Errorf("Expected error for invalid input type")
+	}
+}
+
+// TestStringOrStringSliceUnmarshalYAML tests the UnmarshalYAML method
+func TestStringOrStringSliceUnmarshalYAML(t *testing.T) {
+	// Test unmarshaling a string
+	var sss1 StringOrStringSlice
+	err := sss1.UnmarshalYAML(func(v interface{}) error {
+		// First try will be for string
+		if str, ok := v.(*string); ok {
+			*str = "test-string"
+			return nil
+		}
+		// If not string, return error to trigger slice attempt
+		return fmt.Errorf("not a string")
+	})
+	if err != nil {
+		t.Errorf("Unexpected error unmarshaling string: %v", err)
+	}
+	if sss1.Value != "test-string" {
+		t.Errorf("Expected Value to be 'test-string', got '%s'", sss1.Value)
+	}
+	if len(sss1.Values) != 1 || sss1.Values[0] != "test-string" {
+		t.Errorf("Expected Values to be ['test-string'], got %v", sss1.Values)
+	}
+
+	// Test unmarshaling a slice of strings
+	var sss2 StringOrStringSlice
+	callCount := 0
+	err = sss2.UnmarshalYAML(func(v interface{}) error {
+		callCount++
+		if callCount == 1 {
+			// First call tries string, should fail
+			return fmt.Errorf("not a string")
+		}
+		// Second call tries slice
+		if slice, ok := v.(*[]string); ok {
+			*slice = []string{"item1", "item2", "item3"}
+			return nil
+		}
+		return fmt.Errorf("not a slice")
+	})
+	if err != nil {
+		t.Errorf("Unexpected error unmarshaling slice: %v", err)
+	}
+	if sss2.Value != "item1" {
+		t.Errorf("Expected Value to be 'item1', got '%s'", sss2.Value)
+	}
+	if len(sss2.Values) != 3 || sss2.Values[0] != "item1" || sss2.Values[1] != "item2" || sss2.Values[2] != "item3" {
+		t.Errorf("Expected Values to be ['item1', 'item2', 'item3'], got %v", sss2.Values)
+	}
+
+	// Test unmarshaling an empty slice
+	var sss3 StringOrStringSlice
+	callCount3 := 0
+	err = sss3.UnmarshalYAML(func(v interface{}) error {
+		callCount3++
+		if callCount3 == 1 {
+			// First call tries string, should fail
+			return fmt.Errorf("not a string")
+		}
+		// Second call tries slice
+		if slice, ok := v.(*[]string); ok {
+			*slice = []string{}
+			return nil
+		}
+		return fmt.Errorf("not a slice")
+	})
+	if err != nil {
+		t.Errorf("Unexpected error unmarshaling empty slice: %v", err)
+	}
+	if sss3.Value != "" {
+		t.Errorf("Expected Value to be empty for empty slice, got '%s'", sss3.Value)
+	}
+	if len(sss3.Values) != 0 {
+		t.Errorf("Expected Values to be empty, got %v", sss3.Values)
+	}
+
+	// Test unmarshaling invalid type (should fail)
+	var sss4 StringOrStringSlice
+	err = sss4.UnmarshalYAML(func(v interface{}) error {
+		return fmt.Errorf("unmarshal error")
+	})
+	if err == nil {
+		t.Errorf("Expected error when unmarshaling fails for both string and slice")
+	}
+}
+
+// TestIsReusableWorkflow tests the IsReusableWorkflow function
+func TestIsReusableWorkflow(t *testing.T) {
+	// Test with workflow_call in map[string]interface{}
+	workflow1 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{},
+			"push":          nil,
+		},
+	}
+	if !IsReusableWorkflow(workflow1) {
+		t.Errorf("Expected workflow with workflow_call to be reusable")
+	}
+
+	// Test with workflow_call in map[interface{}]interface{}
+	workflow2 := &ActionFile{
+		On: map[interface{}]interface{}{
+			"workflow_call": map[string]interface{}{},
+			"push":          nil,
+		},
+	}
+	if !IsReusableWorkflow(workflow2) {
+		t.Errorf("Expected workflow with workflow_call to be reusable")
+	}
+
+	// Test without workflow_call
+	workflow3 := &ActionFile{
+		On: map[string]interface{}{
+			"push": nil,
+		},
+	}
+	if IsReusableWorkflow(workflow3) {
+		t.Errorf("Expected workflow without workflow_call to not be reusable")
+	}
+
+	// Test with map[interface{}]interface{} but non-string key
+	workflow4 := &ActionFile{
+		On: map[interface{}]interface{}{
+			42:     "value",
+			"push": nil,
+		},
+	}
+	if IsReusableWorkflow(workflow4) {
+		t.Errorf("Expected workflow with non-string key to not be reusable")
+	}
+
+	// Test with nil On
+	workflow5 := &ActionFile{
+		On: nil,
+	}
+	if IsReusableWorkflow(workflow5) {
+		t.Errorf("Expected workflow with nil On to not be reusable")
+	}
+
+	// Test with unsupported On type
+	workflow6 := &ActionFile{
+		On: "push",
+	}
+	if IsReusableWorkflow(workflow6) {
+		t.Errorf("Expected workflow with string On to not be reusable")
+	}
+}
+
+// TestExtractInputsFromWorkflowCall tests the ExtractInputsFromWorkflowCall function
+func TestExtractInputsFromWorkflowCall(t *testing.T) {
+	// Test with valid workflow_call inputs
+	workflow1 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"inputs": map[string]interface{}{
+					"input1": map[string]interface{}{
+						"description": "First input",
+						"required":    true,
+						"default":     "default1",
+					},
+					"input2": map[string]interface{}{
+						"description": "Second input",
+						"required":    false,
+					},
+				},
+			},
+		},
+	}
+
+	inputs, err := ExtractInputsFromWorkflowCall(workflow1)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(inputs) != 2 {
+		t.Errorf("Expected 2 inputs, got %d", len(inputs))
+	}
+	if inputs["input1"].Description != "First input" {
+		t.Errorf("Expected input1 description to be 'First input', got '%s'", inputs["input1"].Description)
+	}
+	if !inputs["input1"].Required {
+		t.Errorf("Expected input1 to be required")
+	}
+	if inputs["input1"].Default != "default1" {
+		t.Errorf("Expected input1 default to be 'default1', got '%s'", inputs["input1"].Default)
+	}
+
+	// Test without workflow_call
+	workflow2 := &ActionFile{
+		On: map[string]interface{}{
+			"push": nil,
+		},
+	}
+	inputs2, err := ExtractInputsFromWorkflowCall(workflow2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if inputs2 != nil {
+		t.Errorf("Expected nil inputs for non-reusable workflow")
+	}
+
+	// Test without inputs in workflow_call
+	workflow3 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{},
+		},
+	}
+	inputs3, err := ExtractInputsFromWorkflowCall(workflow3)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if inputs3 != nil {
+		t.Errorf("Expected nil inputs when no inputs defined")
+	}
+
+	// Test with invalid workflow_call type
+	workflow4 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": "invalid",
+		},
+	}
+	_, err = ExtractInputsFromWorkflowCall(workflow4)
+	if err == nil {
+		t.Errorf("Expected error for invalid workflow_call type")
+	}
+
+	// Test with invalid inputs type
+	workflow5 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"inputs": "invalid",
+			},
+		},
+	}
+	_, err = ExtractInputsFromWorkflowCall(workflow5)
+	if err == nil {
+		t.Errorf("Expected error for invalid inputs type")
+	}
+
+	// Test with invalid input definition type
+	workflow6 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"inputs": map[string]interface{}{
+					"input1": "invalid",
+				},
+			},
+		},
+	}
+	_, err = ExtractInputsFromWorkflowCall(workflow6)
+	if err == nil {
+		t.Errorf("Expected error for invalid input definition type")
+	}
+}
+
+// TestExtractOutputsFromWorkflowCall tests the ExtractOutputsFromWorkflowCall function
+func TestExtractOutputsFromWorkflowCall(t *testing.T) {
+	// Test with valid workflow_call outputs
+	workflow1 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"outputs": map[string]interface{}{
+					"output1": map[string]interface{}{
+						"description": "First output",
+						"value":       "${{ jobs.build.outputs.result }}",
+					},
+					"output2": map[string]interface{}{
+						"description": "Second output",
+					},
+				},
+			},
+		},
+	}
+
+	outputs, err := ExtractOutputsFromWorkflowCall(workflow1)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(outputs) != 2 {
+		t.Errorf("Expected 2 outputs, got %d", len(outputs))
+	}
+	if outputs["output1"].Description != "First output" {
+		t.Errorf("Expected output1 description to be 'First output', got '%s'", outputs["output1"].Description)
+	}
+	if outputs["output1"].Value != "${{ jobs.build.outputs.result }}" {
+		t.Errorf("Expected output1 value to be '${{ jobs.build.outputs.result }}', got '%s'", outputs["output1"].Value)
+	}
+
+	// Test without workflow_call
+	workflow2 := &ActionFile{
+		On: map[string]interface{}{
+			"push": nil,
+		},
+	}
+	outputs2, err := ExtractOutputsFromWorkflowCall(workflow2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if outputs2 != nil {
+		t.Errorf("Expected nil outputs for non-reusable workflow")
+	}
+
+	// Test without outputs in workflow_call
+	workflow3 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{},
+		},
+	}
+	outputs3, err := ExtractOutputsFromWorkflowCall(workflow3)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if outputs3 != nil {
+		t.Errorf("Expected nil outputs when no outputs defined")
+	}
+
+	// Test with invalid workflow_call type
+	workflow4 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": "invalid",
+		},
+	}
+	_, err = ExtractOutputsFromWorkflowCall(workflow4)
+	if err == nil {
+		t.Errorf("Expected error for invalid workflow_call type")
+	}
+
+	// Test with invalid outputs type
+	workflow5 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"outputs": "invalid",
+			},
+		},
+	}
+	_, err = ExtractOutputsFromWorkflowCall(workflow5)
+	if err == nil {
+		t.Errorf("Expected error for invalid outputs type")
+	}
+
+	// Test with invalid output definition type
+	workflow6 := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"outputs": map[string]interface{}{
+					"output1": "invalid",
+				},
+			},
+		},
+	}
+	_, err = ExtractOutputsFromWorkflowCall(workflow6)
+	if err == nil {
+		t.Errorf("Expected error for invalid output definition type")
+	}
+}
+
+// TestValidateCompositeAction tests validation of composite actions
+func TestValidateCompositeAction(t *testing.T) {
+	// Test valid composite action
+	action := &ActionFile{
+		Name:        "Composite Action",
+		Description: "A composite action",
+		Runs: RunsConfig{
+			Using: "composite",
+			Steps: []Step{
+				{
+					Name: "Step 1",
+					Run:  "echo 'Hello'",
+				},
+			},
+		},
+	}
+
+	validator := NewValidator()
+	errors := validator.Validate(action)
+
+	if len(errors) > 0 {
+		t.Errorf("Expected no validation errors for valid composite action, got %d: %v", len(errors), errors)
+	}
+
+	// Test composite action without steps
+	action.Runs.Steps = []Step{}
+	errors = validator.Validate(action)
+
+	if len(errors) != 1 {
+		t.Errorf("Expected 1 validation error for composite action without steps, got %d", len(errors))
+	} else if errors[0].Field != "runs.steps" {
+		t.Errorf("Expected validation error for runs.steps, got %s", errors[0].Field)
+	}
+}
+
+// TestValidateUnsupportedActionType tests validation of unsupported action types
+func TestValidateUnsupportedActionType(t *testing.T) {
+	action := &ActionFile{
+		Name:        "Unsupported Action",
+		Description: "An action with unsupported type",
+		Runs: RunsConfig{
+			Using: "unsupported-type",
+		},
+	}
+
+	validator := NewValidator()
+	errors := validator.Validate(action)
+
+	if len(errors) != 1 {
+		t.Errorf("Expected 1 validation error for unsupported action type, got %d", len(errors))
+	} else if errors[0].Field != "runs.using" {
+		t.Errorf("Expected validation error for runs.using, got %s", errors[0].Field)
+	}
+}
+
+// TestValidateNode20Action tests validation of Node.js 20 actions
+func TestValidateNode20Action(t *testing.T) {
+	// Test valid Node.js 20 action
+	action := &ActionFile{
+		Name:        "Node.js 20 Action",
+		Description: "A Node.js 20 action",
+		Runs: RunsConfig{
+			Using: "node20",
+			Main:  "dist/index.js",
+		},
+	}
+
+	validator := NewValidator()
+	errors := validator.Validate(action)
+
+	if len(errors) > 0 {
+		t.Errorf("Expected no validation errors for valid Node.js 20 action, got %d: %v", len(errors), errors)
+	}
+
+	// Test Node.js 20 action without main
+	action.Runs.Main = ""
+	errors = validator.Validate(action)
+
+	if len(errors) != 1 {
+		t.Errorf("Expected 1 validation error for Node.js 20 action without main, got %d", len(errors))
+	} else if errors[0].Field != "runs.main" {
+		t.Errorf("Expected validation error for runs.main, got %s", errors[0].Field)
+	}
+}
+
+// TestParseDirWithSubdirectories tests ParseDir with subdirectories
+func TestParseDirWithSubdirectories(t *testing.T) {
+	// Create a temporary directory structure for testing
+	tempDir := t.TempDir()
+
+	// Create subdirectory
+	subDir := filepath.Join(tempDir, "subdir")
+	err := os.MkdirAll(subDir, 0755)
+	if err != nil {
+		t.Fatalf("Failed to create subdirectory: %v", err)
+	}
+
+	// Create YAML files in different directories
+	yamlContent := `name: Test Action
+description: A test action
+runs:
+  using: composite
+  steps:
+    - name: Test step
+      run: echo "test"
+`
+
+	// File in root directory
+	err = os.WriteFile(filepath.Join(tempDir, "action.yml"), []byte(yamlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// File in subdirectory
+	err = os.WriteFile(filepath.Join(subDir, "nested.yaml"), []byte(yamlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create nested test file: %v", err)
+	}
+
+	// Non-YAML file (should be ignored)
+	err = os.WriteFile(filepath.Join(tempDir, "readme.txt"), []byte("This is not YAML"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create non-YAML file: %v", err)
+	}
+
+	// Parse the directory
+	actions, err := ParseDir(tempDir)
+	if err != nil {
+		t.Fatalf("Failed to parse directory: %v", err)
+	}
+
+	// Should have parsed 2 YAML files
+	if len(actions) != 2 {
+		t.Errorf("Expected 2 actions, got %d", len(actions))
+	}
+
+	// Check that both files were parsed correctly
+	foundRoot := false
+	foundNested := false
+	for path, action := range actions {
+		if path == "action.yml" {
+			foundRoot = true
+		} else if path == filepath.Join("subdir", "nested.yaml") {
+			foundNested = true
+		}
+		if action.Name != "Test Action" {
+			t.Errorf("Expected action name to be 'Test Action', got '%s'", action.Name)
+		}
+	}
+
+	if !foundRoot {
+		t.Errorf("Expected to find action.yml in results")
+	}
+	if !foundNested {
+		t.Errorf("Expected to find nested.yaml in results")
+	}
+}
+
+// TestParseDirWithInvalidYAML tests ParseDir with invalid YAML files
+func TestParseDirWithInvalidYAML(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create an invalid YAML file
+	invalidYAML := `name: Test Action
+description: A test action
+runs:
+  using: composite
+  steps:
+    - name: Test step
+      run: echo "test"
+    invalid_yaml_here: [unclosed bracket
+`
+
+	err := os.WriteFile(filepath.Join(tempDir, "invalid.yml"), []byte(invalidYAML), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create invalid YAML file: %v", err)
+	}
+
+	// ParseDir should return an error for invalid YAML
+	_, err = ParseDir(tempDir)
+	if err == nil {
+		t.Errorf("Expected error when parsing directory with invalid YAML")
+	}
+}
+
+// Benchmark tests for performance measurement
+
+// BenchmarkParseFile benchmarks the ParseFile function
+func BenchmarkParseFile(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, err := ParseFile("testdata/action.yml")
+		if err != nil {
+			b.Fatalf("Failed to parse file: %v", err)
+		}
+	}
+}
+
+// BenchmarkParseWorkflow benchmarks parsing workflow files
+func BenchmarkParseWorkflow(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, err := ParseFile("testdata/workflow.yml")
+		if err != nil {
+			b.Fatalf("Failed to parse workflow: %v", err)
+		}
+	}
+}
+
+// BenchmarkValidateAction benchmarks the validation function
+func BenchmarkValidateAction(b *testing.B) {
+	action, err := ParseFile("testdata/action.yml")
+	if err != nil {
+		b.Fatalf("Failed to parse action for benchmark: %v", err)
+	}
+
+	validator := NewValidator()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		validator.Validate(action)
+	}
+}
+
+// BenchmarkMapOfStringInterface benchmarks the map conversion utility
+func BenchmarkMapOfStringInterface(b *testing.B) {
+	input := map[interface{}]interface{}{
+		"key1": "value1",
+		"key2": "value2",
+		"key3": "value3",
+		"key4": "value4",
+		"key5": "value5",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := MapOfStringInterface(input)
+		if err != nil {
+			b.Fatalf("Failed to convert map: %v", err)
+		}
+	}
+}
+
+// BenchmarkIsReusableWorkflow benchmarks the IsReusableWorkflow function
+func BenchmarkIsReusableWorkflow(b *testing.B) {
+	workflow := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{},
+			"push":          nil,
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		IsReusableWorkflow(workflow)
+	}
+}
+
+// BenchmarkExtractInputsFromWorkflowCall benchmarks the input extraction function
+func BenchmarkExtractInputsFromWorkflowCall(b *testing.B) {
+	workflow := &ActionFile{
+		On: map[string]interface{}{
+			"workflow_call": map[string]interface{}{
+				"inputs": map[string]interface{}{
+					"input1": map[string]interface{}{
+						"description": "First input",
+						"required":    true,
+						"default":     "default1",
+					},
+					"input2": map[string]interface{}{
+						"description": "Second input",
+						"required":    false,
+					},
+				},
+			},
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := ExtractInputsFromWorkflowCall(workflow)
+		if err != nil {
+			b.Fatalf("Failed to extract inputs: %v", err)
+		}
 	}
 }
